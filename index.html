@@ -5,12 +5,60 @@
     <meta name="viewport" content="width=device-width">
     <title>CETEIcean Demo</title>
     <link rel="stylesheet" href="CETEIcean.css" media="screen" charset="utf-8">
+    <style>
+      .ftnote{
+        display: none;
+        position: absolute;
+        z-index: 100;
+        max-width: 350px;
+        background: #fff;
+        color: #222;
+        font-size: 13px;
+        line-height: 1.5em;
+        border: 1px solid #c8ccd1;
+        border-radius: 3px;
+        box-shadow: 0 15px 45px -10px rgba(0,0,0,0.3);
+        overflow-wrap: break-word;
+        word-wrap:break-word;
+        }
+    </style>
   </head>
+
+  <script>
+    //鼠標碰到目標時觸發的函式
+    function display_con(id){
+      //抓到目標ID
+      a = document.getElementById(id+"_r");
+      //定位當下鼠標的位置
+      var x = event.clientX +window.pageXOffset //+ document.body.scrollLeft + 50;
+			var y = event.clientY +window.pageYOffset//+ document.body.scrollTop - 5; 
+      //設定目標的位置與顯示狀態
+			a.style.left = x + "px";
+			a.style.top = y + "px";
+      a.style.display = 'block';
+    }
+    //鼠標離開目標時觸發的函式
+    function vanish_con(id){
+      //抓到目標ID
+      a = document.getElementById(id+"_r");
+      //設定目標為不顯示狀態
+      a.style.display = 'none';
+    }
+    //鼠標碰到已顯示的區域時觸發的函式
+    function display2_con(id){
+      //抓到目標ID
+      a = document.getElementById(id+"_r");
+      //維持目標顯示狀態
+      a.style.display = 'block';
+    }
+	</script>
+
   <body>
     <div id="TEI">
       Sadly, this page will not work in Internet Explorer and some older browsers. We suggest you use a newer version of Chrome or Firefox.
     </div>
     <script src="CETEI.js"></script>
+
     <script>
       var CETEIcean = new CETEI();
 
@@ -22,17 +70,38 @@
           } else {
             this.noteIndex++;
           }
+          //設定ID
           let id = "_note_" + this.noteIndex;
-          var str = String(elt.innerHTML);
-          str = str.replace(/<[^>]+>/g,"");
+          //創建一個名為link標籤a
           let link = document.createElement("a");
+          //在link標籤下新增屬性ID與href
           link.setAttribute("id", "src" + id);
           link.setAttribute("href", "#" + id);
-         // link.setAttribute("title",elt.innerHTML)
-          link.setAttribute("title",str)
+          var str1 = "'"+id+ "'"
+          //在link標籤中新增鼠標碰到目標時觸發display函式
+          link.setAttribute("onmouseover" , "display_con("+str1+")");
+          //在link標籤中新增鼠標離開目標時觸發vanish_con函式
+          link.setAttribute("onmouseout" , "vanish_con("+str1+")");
+          //將數字(註腳標號))放入link裡
           link.innerHTML = this.noteIndex;
+          //新增一個名為link_detail的標籤div
+          let link_detail = document.createElement("tei-div");
+          //在link_detail裡新增屬性ID class
+          link_detail.setAttribute("id" , id + "_r");
+          link_detail.setAttribute("class" , "ftnote");
+          //在link_detail標籤中新增鼠標碰到目標時觸發display函式
+          link_detail.setAttribute("onmouseover" , "display2_con("+str1+")");
+          //在link_detail標籤中新增鼠標離開目標時觸發vanish_con函式
+          link_detail.setAttribute("onmouseout" , "vanish_con("+str1+")");
+          //將註解的內容放入link_detail裡
+          link_detail.innerHTML = elt.innerHTML;
+          //新增名為content2k7的標籤sup
           let content = document.createElement("sup");
+          //將link作為子元素加入content
           content.appendChild(link);
+          //將link_detail作為子元素加入content
+          content.appendChild(link_detail)
+          //新增文末的註解列表
           let notes = this.dom.querySelector("ol.notes");
           if (!notes) {
             notes = document.createElement("ol");
@@ -44,6 +113,7 @@
           note.innerHTML = elt.innerHTML;
           notes.appendChild(note);
           let el = document.getElementById(note.id);
+          //新增回跳的超連結
           el.innerHTML = '<span><a href="#ftn'+this.noteIndex + '">' + "^" + '</a></span>'+elt.innerHTML;
           return content;
         }
